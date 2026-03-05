@@ -13,9 +13,10 @@ This README provides an overview of our project for the Smart India Hackathon, i
 - **Tanish Kumar** - 2023UCA1820 - [@Tanish Kumar](https://github.com/TANiSH-17)
 - **Shobhit Chola** - 2023UCA1850 - [@Shobhit Chola](https://github.com/ShobhitChola)
 - **Ashtam Pati Tiwari** - 2023UEC4538 - [@Ashtam Pati Tiwari](https://github.com/Ashtam01)
+- **Akansha** - 2023UEE4571 - [@Akansha](https://github.com/sheelakansha)
 - **Kajal Soni** - 2024UIC3655 - [@Kajal Soni](https://github.com/soniikajal)
 - **Prakriti Chandra** - 2023UEC4523 - [@Prakriti Chandra](https://github.com/prakritichandra484)
-- **Akansha** - 2023UEE4571 - [@Akansha](https://github.com/sheelakansha)
+
 
 ---
 
