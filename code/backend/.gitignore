@@ -12,6 +12,7 @@ package-lock.json
 # A .env.example file with the required variables should be committed instead.
 .env
 .env.local
+data/
 .env.development.local
 .env.test.local
 .env.production.local

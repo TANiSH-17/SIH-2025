@@ -9,11 +9,17 @@ const router = express.Router();
 
 // --- POST /api/auth/register ---
 router.post('/register', async (req, res) => {
-  await dbConnect(); // ✅ 2. ENSURE DB IS CONNECTED
-
   const { username, password, role, hospitalName, specialCode } = req.body;
+  const cleanUsername = username ? username.trim() : '';
+
+  if (!cleanUsername || !password) {
+    return res.status(400).json({ message: 'Username and password are required.' });
+  }
+
   try {
-    const userExists = await User.findOne({ username, role });
+    await dbConnect();
+
+    const userExists = await User.findOne({ username: { $regex: new RegExp(`^${cleanUsername}$`, 'i') }, role });
     if (userExists) {
       return res.status(400).json({ message: 'This username is already registered for the selected role.' });
     }
@@ -31,7 +37,7 @@ router.post('/register', async (req, res) => {
       }
     }
     const user = await User.create({
-      username,
+      username: cleanUsername,
       password,
       role: role || 'individual',
       hospitalName: role === 'admin' ? hospitalName : undefined,
@@ -45,20 +51,29 @@ router.post('/register', async (req, res) => {
     });
   } catch (error) {
     console.error("Registration Error:", error);
-    res.status(500).json({ message: 'Server error during registration.' });
+    res.status(500).json({ message: 'Database/Server error during registration.', error: error.message });
   }
 });
 
 // --- POST /api/auth/login ---
 router.post('/login', async (req, res) => {
-  await dbConnect(); // ✅ 3. ENSURE DB IS CONNECTED
-
   try {
+    await dbConnect();
+
     const { username, password, role } = req.body;
     if (!username || !password || !role) {
         return res.status(400).json({ message: 'Username, password, and role are required.' });
     }
-    const user = await User.findOne({ username, role });
+
+    const cleanUsername = username.trim();
+    const jwtSecret = process.env.JWT_SECRET;
+
+    if (!jwtSecret) {
+      console.error("Login Error: JWT_SECRET environment variable is not defined.");
+      return res.status(500).json({ message: 'Server configuration error: JWT_SECRET is missing.' });
+    }
+
+    const user = await User.findOne({ username: { $regex: new RegExp(`^${cleanUsername}$`, 'i') }, role });
     if (!user || !(await user.comparePassword(password))) {
       return res.status(401).json({ message: 'Invalid credentials for the selected role.' });
     }
@@ -69,7 +84,7 @@ router.post('/login', async (req, res) => {
     };
     const token = jwt.sign(
       payload,
-      process.env.JWT_SECRET,
+      jwtSecret,
       { expiresIn: '1d' }
     );
     res.status(200).json({
@@ -84,6 +99,7 @@ router.post('/login', async (req, res) => {
       }
     });
   } catch (error) {
+    console.error("Login Error:", error);
     res.status(500).json({ message: 'Server error during login.', error: error.message });
   }
 });

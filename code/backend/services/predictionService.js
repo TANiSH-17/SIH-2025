@@ -1,16 +1,29 @@
 const axios = require('axios');
 const Prediction = require('../models/Prediction');
 const MedicalRecord = require('../models/medicalRecord');
+const dbConnect = require('../lib/dbConnect');
 
 const WEATHER_API_KEY = process.env.OPENWEATHER_API_KEY; 
 
 // This function contains the core logic for a single prediction
 async function generatePrediction(disease, location, lat, lon) {
   try {
-    // 1. Fetch live weather data
-    const weatherResponse = await axios.get(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${WEATHER_API_KEY}&units=metric`);
-    const { temp, humidity } = weatherResponse.data.main;
-    const windSpeed = weatherResponse.data.wind.speed;
+    let temp = 28.0;
+    let humidity = 65;
+
+    // 1. Fetch live weather data if API key is provided
+    const apiKey = process.env.OPENWEATHER_API_KEY;
+    if (apiKey && apiKey !== 'your_openweather_api_key') {
+      try {
+        const weatherResponse = await axios.get(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`);
+        if (weatherResponse.data && weatherResponse.data.main) {
+          temp = weatherResponse.data.main.temp;
+          humidity = weatherResponse.data.main.humidity;
+        }
+      } catch (weatherErr) {
+        console.warn(`[Prediction Service] Weather API unavailable for ${location}, using estimated climate data.`);
+      }
+    }
 
     // 2. Simulate internal data analysis
     const searchRegex = new RegExp(disease.split(' ')[0], 'i');
@@ -77,6 +90,12 @@ async function generatePrediction(disease, location, lat, lon) {
 // This function runs the model for all relevant diseases and cities
 async function runPredictionModel() {
     console.log('[Prediction Service] Running prediction model...');
+    try {
+        await dbConnect();
+    } catch (dbErr) {
+        console.error('[Prediction Service] Failed to connect to database:', dbErr.message);
+        return;
+    }
     
     // Define the list of diseases and cities to monitor
     const locations = [

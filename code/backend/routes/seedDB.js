@@ -83,9 +83,13 @@ const mockPatientData = [
   }
 ];
 
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+
 const runSeeder = async () => {
     try {
-        await mongoose.connect(process.env.MONGO_URI);
+        const mongoUri = process.env.MONGO_URI || process.env.MONGODB_URI || 'mongodb://localhost:27017/aayulink';
+        await mongoose.connect(mongoUri);
         console.log('MongoDB connected for seeding...');
         
         console.log('--- Clearing Old Data ---');
@@ -110,6 +114,26 @@ const runSeeder = async () => {
             }));
             await MedicalRecord.insertMany(recordsToSave);
             console.log(`Saved patient ${patient.personalInfo.name} and ${patient.medicalHistory.length} records.`);
+        }
+
+        // Seed default Admin user if not present
+        const User = require('../models/user');
+        const Hospital = require('../models/hospital');
+        let hospital = await Hospital.findOne({ code: 'APOLLO-01' });
+        if (!hospital) {
+            hospital = new Hospital({ name: 'Apollo Hospital', code: 'APOLLO-01' });
+            await hospital.save();
+        }
+        let adminUser = await User.findOne({ username: 'admin', role: 'admin' });
+        if (!adminUser) {
+            await User.create({
+                username: 'admin',
+                password: 'admin123',
+                role: 'admin',
+                hospitalName: 'Apollo Hospital',
+                hospitalCode: 'APOLLO-01'
+            });
+            console.log('Seeded default admin user: admin / admin123');
         }
         
         console.log('--- ✅ Seeding Complete ---');

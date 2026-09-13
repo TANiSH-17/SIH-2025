@@ -63,18 +63,15 @@ app.get('/', (_req, res) => {
   res.status(200).send('AayuLink Backend is running!');
 });
 
+const dbConnect = require('./lib/dbConnect');
+
 const PORT = process.env.PORT || 8000;
-const MONGO_URI = process.env.MONGO_URI || process.env.MONGODB_URI;
 
-if (!MONGO_URI) {
-  console.error('---!! FATAL ERROR !!--- No MONGO_URI/MONGODB_URI found in environment variables.');
-  process.exit(1);
-}
-
-// Connection now handled on-demand by dbConnect helper in routes
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`Server is listening on http://localhost:${PORT}`);
   try {
+    await dbConnect();
+    console.log('[Database] Connected successfully at startup.');
     // Start the recurring public health prediction model
     runPredictionModel();
     setInterval(runPredictionModel, 3600000); // Runs every hour
