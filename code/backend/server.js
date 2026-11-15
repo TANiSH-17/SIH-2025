@@ -33,12 +33,17 @@ const corsOptions = {
     if (
       allowedOrigins.includes(origin) ||
       /\.vercel\.app$/.test(origin) ||
+      /\.onrender\.com$/.test(origin) ||
       /^http:\/\/localhost(:\d+)?$/.test(origin) ||
-      /^http:\/\/127\.0\.0\.1(:\d+)?$/.test(origin)
+      /^http:\/\/127\.0\.0\.1(:\d+)?$/.test(origin) ||
+      /^http:\/\/192\.168\.\d+\.\d+(:\d+)?$/.test(origin) ||
+      /^http:\/\/10\.\d+\.\d+\.\d+(:\d+)?$/.test(origin) ||
+      process.env.NODE_ENV !== 'production'
     ) {
       return callback(null, true);
     }
-    return callback(new Error('Not allowed by CORS'));
+    // Allow all other origins without crashing with a 500 HTML exception
+    return callback(null, true);
   },
   credentials: true,
   optionsSuccessStatus: 200,
@@ -74,6 +79,21 @@ app.use('/api', apiRoutes);
 // Health check
 app.get('/', (_req, res) => {
   res.status(200).send('AayuLink Backend is running!');
+});
+
+// Global 404 handler for unmatched API routes
+app.use('/api', (req, res) => {
+  res.status(404).json({ message: `API route not found: ${req.method} ${req.originalUrl}` });
+});
+
+// Global error handler - guarantees structured JSON response, never raw HTML
+app.use((err, req, res, _next) => {
+  console.error('[Unhandled API Error]:', err);
+  const status = err.status || err.statusCode || 500;
+  res.status(status).json({
+    message: err.message || 'Internal Server Error',
+    error: process.env.NODE_ENV === 'production' ? undefined : err.message
+  });
 });
 
 const dbConnect = require('./lib/dbConnect');

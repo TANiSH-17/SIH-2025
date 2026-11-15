@@ -51,7 +51,12 @@ export default function App() {
       return detail ? `${err.response.data.message} (${detail})` : err.response.data.message;
     }
     if (typeof err.response?.data === 'string' && err.response.data.trim()) {
-      return `Server error (${err.response.status}): ${err.response.data.slice(0, 120)}`;
+      const preMatch = err.response.data.match(/<pre[^>]*>([\s\S]*?)<\/pre>/i);
+      if (preMatch && preMatch[1]) {
+        const cleanMsg = preMatch[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+        return `Server error (${err.response.status}): ${cleanMsg.slice(0, 140)}`;
+      }
+      return `Server error (${err.response.status}). Please check your backend connection.`;
     }
     if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
       return 'Request timed out. The server may be waking up from sleep. Please try again.';

@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "description": "AayuLink - Digital Health Record Management",
   "scripts": {
+    "start": "node code/backend/server.js",
+    "build": "npm --prefix code/backend install && npm --prefix code/frontend install && npm --prefix code/frontend run build",
     "install:all": "npm --prefix code/backend install && npm --prefix code/frontend install",
     "install:backend": "npm --prefix code/backend install",
     "install:frontend": "npm --prefix code/frontend install",
