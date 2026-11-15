@@ -57,6 +57,7 @@ Would you like me to elaborate on any of these points?
     try {
       const payload = {
         question,
+        abhaId,
         medicalRecords: medicalHistory || [],
         reportsAndScans: reportsAndScans || [],
       };

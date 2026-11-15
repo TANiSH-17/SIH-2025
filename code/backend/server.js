@@ -6,27 +6,40 @@ const mongoose = require('mongoose');
 require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 
 // --- Import ALL Route Files ---
-const apiRoutes = require('./routes/api');              
+const apiRoutes = require('./routes/api');
 const authRoutes = require('./routes/auth');
 const translatorRoutes = require('./routes/translator');
 const prescriptionRoutes = require('./routes/prescription');
 const otpRoutes = require('./routes/otp');
 const predictionRoutes = require('./routes/predictions');
 const patientRoutes = require('./routes/patient');
-const mdrRoutes = require('./routes/mdr'); 
+const mdrRoutes = require('./routes/mdr');
 const { runPredictionModel } = require('./services/predictionService');
 
 const app = express();
 
 // CORS
+const allowedOrigins = [
+  'https://sih-2025-pi-seven.vercel.app',
+  'https://sih-2025-aayulink.vercel.app',
+  'https://sih-2025-bpa576elr-tanish-17s-projects.vercel.app',
+  'https://sih-2025-aegr978t0-tanish-17s-projects.vercel.app',
+  'http://localhost:5173'
+];
+
 const corsOptions = {
-  origin: [
-    'https://sih-2025-pi-seven.vercel.app',
-    'https://sih-2025-aayulink.vercel.app', 
-    'https://sih-2025-bpa576elr-tanish-17s-projects.vercel.app',
-    'https://sih-2025-aegr978t0-tanish-17s-projects.vercel.app',
-    'http://localhost:5173'
-  ],
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    if (
+      allowedOrigins.includes(origin) ||
+      /\.vercel\.app$/.test(origin) ||
+      /^http:\/\/localhost(:\d+)?$/.test(origin) ||
+      /^http:\/\/127\.0\.0\.1(:\d+)?$/.test(origin)
+    ) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
   optionsSuccessStatus: 200,
   allowedHeaders: ['authorization', 'content-type'],
@@ -72,11 +85,16 @@ app.listen(PORT, async () => {
   try {
     await dbConnect();
     console.log('[Database] Connected successfully at startup.');
+  } catch (dbErr) {
+    console.error('[Database] Connection failed at startup:', dbErr.message);
+  }
+
+  try {
     // Start the recurring public health prediction model
     runPredictionModel();
     setInterval(runPredictionModel, 3600000); // Runs every hour
   } catch (e) {
-    console.error('Prediction service failed to start:', e);
+    console.error('[Prediction Service] Failed to start:', e.message);
   }
 });
 

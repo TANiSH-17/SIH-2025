@@ -135,6 +135,17 @@ const runSeeder = async () => {
             });
             console.log('Seeded default admin user: admin / admin123');
         }
+
+        // Seed default Individual user for testing
+        let individualUser = await User.findOne({ username: '12-3456-7890-0001', role: 'individual' });
+        if (!individualUser) {
+            await User.create({
+                username: '12-3456-7890-0001',
+                password: 'password123',
+                role: 'individual'
+            });
+            console.log('Seeded default individual user: 12-3456-7890-0001 / password123');
+        }
         
         console.log('--- ✅ Seeding Complete ---');
     } catch (error) {

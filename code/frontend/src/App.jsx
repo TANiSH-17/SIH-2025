@@ -45,6 +45,23 @@ export default function App() {
     }, 5000);
   };
   
+  const getErrorMessage = (err, fallback) => {
+    if (err.response?.data?.message) {
+      const detail = err.response.data.error;
+      return detail ? `${err.response.data.message} (${detail})` : err.response.data.message;
+    }
+    if (typeof err.response?.data === 'string' && err.response.data.trim()) {
+      return `Server error (${err.response.status}): ${err.response.data.slice(0, 120)}`;
+    }
+    if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
+      return 'Request timed out. The server may be waking up from sleep. Please try again.';
+    }
+    if (err.code === 'ERR_NETWORK' || !err.response) {
+      return 'Unable to reach the server. Please check your internet connection or verify the backend service is running.';
+    }
+    return err.message || fallback;
+  };
+
   const handleLogin = async (username, password, role) => {
     setAuthError('');
     try {
@@ -54,7 +71,7 @@ export default function App() {
       setCurrentUser(response.data.user);
       navigate('/patientLookup');
     } catch (err) {
-      setAuthError(err.response?.data?.message || 'Login failed.');
+      setAuthError(getErrorMessage(err, 'Login failed. Please check your credentials and try again.'));
     }
   };
 
@@ -64,7 +81,7 @@ export default function App() {
       await axios.post(`${API_URL}/api/auth/register`, { username, password, role, hospitalName, specialCode });
       return true;
     } catch (err) {
-      setAuthError(err.response?.data?.message || 'Registration failed.');
+      setAuthError(getErrorMessage(err, 'Registration failed. Please try again.'));
       return false;
     }
   };

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const Otp = require('../models/Otp'); // 1. Import your Mongoose OTP model
 const dbConnect = require('../lib/dbConnect'); // 2. Import the DB helper
 

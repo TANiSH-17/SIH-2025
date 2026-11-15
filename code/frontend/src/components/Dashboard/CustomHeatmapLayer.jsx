@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useMap } from 'react-leaflet';
-import 'leaflet.heat';
-import L from 'leaflet';
+import L from '../../lib/leaflet.heat';
 
 export default function CustomHeatmapLayer({ data, radius, blur }) {
   const map = useMap();

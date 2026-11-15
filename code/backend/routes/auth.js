@@ -6,6 +6,7 @@ const { protect } = require('../middleware/authMiddleware');
 const dbConnect = require('../lib/dbConnect'); // ✅ 1. IMPORT THE DB CONNECTION HELPER
 
 const router = express.Router();
+const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 // --- POST /api/auth/register ---
 router.post('/register', async (req, res) => {
@@ -19,7 +20,7 @@ router.post('/register', async (req, res) => {
   try {
     await dbConnect();
 
-    const userExists = await User.findOne({ username: { $regex: new RegExp(`^${cleanUsername}$`, 'i') }, role });
+    const userExists = await User.findOne({ username: { $regex: new RegExp(`^${escapeRegex(cleanUsername)}$`, 'i') }, role });
     if (userExists) {
       return res.status(400).json({ message: 'This username is already registered for the selected role.' });
     }
@@ -62,7 +63,7 @@ router.post('/login', async (req, res) => {
 
     const { username, password, role } = req.body;
     if (!username || !password || !role) {
-        return res.status(400).json({ message: 'Username, password, and role are required.' });
+      return res.status(400).json({ message: 'Username, password, and role are required.' });
     }
 
     const cleanUsername = username.trim();
@@ -73,7 +74,7 @@ router.post('/login', async (req, res) => {
       return res.status(500).json({ message: 'Server configuration error: JWT_SECRET is missing.' });
     }
 
-    const user = await User.findOne({ username: { $regex: new RegExp(`^${cleanUsername}$`, 'i') }, role });
+    const user = await User.findOne({ username: { $regex: new RegExp(`^${escapeRegex(cleanUsername)}$`, 'i') }, role });
     if (!user || !(await user.comparePassword(password))) {
       return res.status(401).json({ message: 'Invalid credentials for the selected role.' });
     }

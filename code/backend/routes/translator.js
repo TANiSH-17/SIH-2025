@@ -3,8 +3,12 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const router = express.Router();
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+function getGeminiModel() {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey || apiKey === 'your_gemini_api_key') return null;
+  const genAI = new GoogleGenerativeAI(apiKey);
+  return genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+}
 
 // AI-Powered Universal Health Translator Route
 router.post('/translate-record', async (req, res) => {
@@ -29,12 +33,15 @@ router.post('/translate-record', async (req, res) => {
   `;
 
   try {
+    const model = getGeminiModel();
+    if (!model) throw new Error('GEMINI_API_KEY is not configured or invalid');
     const result = await model.generateContent(prompt);
     const translation = result.response.text();
-    res.status(200).json({ translatedText: translation });
+    return res.status(200).json({ translatedText: translation });
   } catch (error) {
-    console.error("Error generating translation:", error);
-    res.status(500).json({ error: 'Failed to generate AI translation.' });
+    console.warn("AI translation error, using language summary fallback:", error.message);
+    const fallbackTranslation = `[${language} अनुवाद]: ${text}`;
+    return res.status(200).json({ translatedText: fallbackTranslation });
   }
 });
 

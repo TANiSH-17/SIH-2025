@@ -44,11 +44,9 @@ export default function AIChatPage({ patientData }) {
     try {
       const payload = {
         question,
-        // MVP: rely on textual history (you can include reports if you want)
+        abhaId: patientData?.abhaId,
         medicalRecords: patientData?.medicalHistory || [],
         reportsAndScans: patientData?.reportsAndScans || [],
-        // Or, if you prefer server-side fetching:
-        // abhaId
       };
 
       const { data } = await axios.post(`${API_URL}/api/chat`, payload);

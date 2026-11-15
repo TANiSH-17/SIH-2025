@@ -1,0 +1,17 @@
+{
+  "name": "aayulink-sih-2025",
+  "version": "1.0.0",
+  "description": "AayuLink - Digital Health Record Management",
+  "scripts": {
+    "install:all": "npm --prefix code/backend install && npm --prefix code/frontend install",
+    "install:backend": "npm --prefix code/backend install",
+    "install:frontend": "npm --prefix code/frontend install",
+    "dev:backend": "npm --prefix code/backend run dev",
+    "dev:frontend": "npm --prefix code/frontend run dev",
+    "dev": "node -e \"const { spawn } = require('child_process'); spawn('npm', ['--prefix', 'code/backend', 'run', 'dev'], { stdio: 'inherit', shell: true }); spawn('npm', ['--prefix', 'code/frontend', 'run', 'dev'], { stdio: 'inherit', shell: true });\"",
+    "seed": "npm --prefix code/backend run seed"
+  },
+  "overrides": {
+    "minimatch": "^11.0.1"
+  }
+}

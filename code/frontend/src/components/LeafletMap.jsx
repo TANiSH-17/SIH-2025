@@ -25,8 +25,9 @@ export default function LeafletMap() {
   return (
     <MapContainer center={indiaCenter} zoom={5} style={{ height: '400px', width: '100%', borderRadius: '1.5rem', zIndex: 0 }}>
       <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}"
+        maxZoom={18}
+        attribution="Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ"
       />
       {hospitals.map(hospital => (
         <Marker key={hospital.id} position={hospital.position}>

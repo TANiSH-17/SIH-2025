@@ -8,6 +8,23 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 export default function AuthPage({ onAuthSuccess }) {
   const [authError, setAuthError] = useState('');
 
+  const getErrorMessage = (err, fallback) => {
+    if (err.response?.data?.message) {
+      const detail = err.response.data.error;
+      return detail ? `${err.response.data.message} (${detail})` : err.response.data.message;
+    }
+    if (typeof err.response?.data === 'string' && err.response.data.trim()) {
+      return `Server error (${err.response.status}): ${err.response.data.slice(0, 120)}`;
+    }
+    if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
+      return 'Request timed out. The server may be waking up from sleep. Please try again.';
+    }
+    if (err.code === 'ERR_NETWORK' || !err.response) {
+      return 'Unable to reach the server. Please check your internet connection or verify the backend service is running.';
+    }
+    return err.message || fallback;
+  };
+
   const handleLogin = async (username, password, role) => {
     setAuthError('');
     try {
@@ -18,7 +35,7 @@ export default function AuthPage({ onAuthSuccess }) {
       });
       onAuthSuccess(response.data.user); // On success, update the main app state
     } catch (error) {
-      setAuthError(error.response?.data?.message || 'Login failed.');
+      setAuthError(getErrorMessage(error, 'Login failed. Please check your credentials and try again.'));
     }
   };
 
@@ -31,7 +48,7 @@ export default function AuthPage({ onAuthSuccess }) {
       // ✅ CRUCIAL: This line sends the "success" signal to the UI.
       return true;
     } catch (error) {
-      setAuthError(error.response?.data?.message || 'Registration failed.');
+      setAuthError(getErrorMessage(error, 'Registration failed. Please try again.'));
       // ✅ CRUCIAL: This line sends the "failure" signal to the UI.
       return false;
     }
