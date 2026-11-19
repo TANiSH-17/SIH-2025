@@ -10,6 +10,7 @@
     "install:frontend": "npm --prefix code/frontend install",
     "dev:backend": "npm --prefix code/backend run dev",
     "dev:frontend": "npm --prefix code/frontend run dev",
+    "mongo": "\"C:\\Program Files\\MongoDB\\Server\\8.0\\bin\\mongod.exe\" --dbpath data/db --bind_ip 127.0.0.1 --port 27017",
     "dev": "node -e \"const { spawn } = require('child_process'); spawn('npm', ['--prefix', 'code/backend', 'run', 'dev'], { stdio: 'inherit', shell: true }); spawn('npm', ['--prefix', 'code/frontend', 'run', 'dev'], { stdio: 'inherit', shell: true });\"",
     "seed": "npm --prefix code/backend run seed"
   },
